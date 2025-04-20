@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Site com Contador</title>
+  <title>Meu Site com Geolocalização</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,7 +14,7 @@
     h1 {
       color: #333;
     }
-    .contador {
+    .localizacao {
       margin-top: 30px;
       font-size: 18px;
       color: #666;
@@ -24,12 +24,25 @@
 <body>
 
   <h1>Bem-vindo ao meu site!</h1>
-  <p>Aqui você está sendo contado 😄</p>
+  <p>Aqui você pode ver sua localização 😄</p>
 
-  <!-- Script do contador.dev -->
-  <script src="https://cdn.counter.dev/script.js" 
-          data-id="ccb47fbe-cead-468c-a015-c54585676566" 
-          data-utcoffset="-3">
+  <div id="localizacao" class="localizacao">Carregando localização...</div>
+
+  <script>
+    // Função para obter a localização do visitante
+    fetch('http://ip-api.com/json/')
+      .then(response => response.json())
+      .then(data => {
+        const cidade = data.city || "Cidade não detectada";
+        const bairro = data.regionName || "Bairro não detectado"; // Ou use um serviço que forneça o bairro
+
+        // Exibe a cidade e o bairro no site
+        document.getElementById('localizacao').innerHTML = `Você está em: ${cidade}, ${bairro}`;
+      })
+      .catch(error => {
+        document.getElementById('localizacao').innerHTML = "Não foi possível determinar sua localização.";
+        console.error("Erro ao obter a localização:", error);
+      });
   </script>
 
 </body>
