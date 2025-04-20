@@ -3,47 +3,283 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Site com Geolocalização</title>
+  <title>Relógios Globais das Bolsas & Calendário Econômico</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
       text-align: center;
-      padding-top: 50px;
-      background: #f0f0f0;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    h1 {
-      color: #333;
+    h2, h3 {
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
-    .localizacao {
-      margin-top: 30px;
-      font-size: 18px;
-      color: #666;
+    .header-container {
+      max-width: 1200px;
+      width: 100%;
+    }
+    .clocks-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    .clock-card {
+      background: #fff;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .clock-card:hover {
+      transform: translateY(-5px);
+    }
+    .clock-canvas {
+      background: radial-gradient(circle, #f8f9fa, #e9ecef);
+      border: 4px solid #2c3e50;
+      border-radius: 50%;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      width: 120px;
+      height: 120px;
+    }
+    .clock-title {
+      font-size: 1rem;
+      color: #2c3e50;
+      margin: 10px 0 5px;
+    }
+    .clock-time {
+      font-size: 0.9rem;
+      color: #34495e;
+      margin: 5px 0;
+      font-family: 'Courier New', monospace;
+    }
+    .clock-status {
+      font-weight: bold;
+      margin-top: 8px;
+      font-size: 0.9rem;
+      padding: 3px 6px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    .clock-status.aberta {
+      background-color: rgba(39, 174, 96, 0.2);
+      color: #27ae60;
+    }
+    .clock-status.fechada {
+      background-color: rgba(192, 57, 43, 0.2);
+      color: #c0392b;
+    }
+    .clock-countdown {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-top: 5px;
+    }
+    .trading-hours {
+      font-size: 0.8rem;
+      color: #34495e;
+      margin: 5px 0;
+    }
+    .weather-info {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #34495e;
+      display: flex;
+      align-items: center;
+    }
+    .weather-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+    .calendar-container {
+      width: 100%;
+      max-width: 1200px;
+    }
+    #economic-calendar {
+      background: #fff;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      width: 100%;
+    }
+    #economic-calendar iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+    .welcome-banner {
+      background: rgba(255,255,255,0.9);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 100%;
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
+  <div class="welcome-banner">
+    <h2>Seja bem-vindo, Trader! 👋</h2>
+    <p>Acompanhe em tempo real os horários das bolsas globais e o calendário econômico.</p>
+  </div>
 
-  <h1>Bem-vindo ao meu site!</h1>
-  <p>Aqui você pode ver sua localização 😄</p>
-
-  <div id="localizacao" class="localizacao">Carregando localização...</div>
+  <div class="header-container">
+    <h2>🌐 Relógios Globais das Bolsas</h2>
+    <div class="clocks-container" id="clocks-container"></div>
+  </div>
+  <div class="calendar-container">
+    <h3>📅 Calendário Econômico</h3>
+    <div id="economic-calendar">
+      <iframe src="https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=5,17,29,25,32,6,37,36,110,26,22,39,14,48,10,35,43,38,4,72&calType=day&timeZone=88&lang=12" frameborder="0" allowtransparency="true" marginwidth="0" marginheight="0"></iframe>
+    </div>
+  </div>
 
   <script>
-    // Usando a API GeoPlugin para obter a localização
-    fetch('https://www.geoplugin.net/json.gp')
-      .then(response => response.json())
-      .then(data => {
-        const cidade = data.geoplugin_city || "Cidade não detectada";
-        const bairro = data.geoplugin_regionName || "Bairro não detectado"; // Substitua com outro campo, se necessário
+    const exchanges = [
+      { 
+        name: "B3 (Brasil)", 
+        timezone: "America/Sao_Paulo", 
+        open: 9, 
+        close: 17,
+        days: [1, 2, 3, 4, 5]
+      },
+      { 
+        name: "NYSE (EUA)", 
+        timezone: "America/New_York", 
+        open: 9.5, 
+        close: 16,
+        days: [1, 2, 3, 4, 5]
+      },
+      { 
+        name: "LSE (Londres)", 
+        timezone: "Europe/London", 
+        open: 8, 
+        close: 16.5,
+        days: [1, 2, 3, 4, 5]
+      },
+      { 
+        name: "XETRA (Alemanha)", 
+        timezone: "Europe/Berlin", 
+        open: 9, 
+        close: 17.5,
+        days: [1, 2, 3, 4, 5]
+      },
+      { 
+        name: "TSE (Tóquio)", 
+        timezone: "Asia/Tokyo", 
+        open: 9, 
+        close: 15,
+        days: [1, 2, 3, 4, 5]
+      },
+    ];
 
-        // Exibe a cidade e a região no site
-        document.getElementById('localizacao').innerHTML = `Você está em: ${cidade}, ${bairro}`;
-      })
-      .catch(error => {
-        document.getElementById('localizacao').innerHTML = "Não foi possível determinar sua localização.";
-        console.error("Erro ao obter a localização:", error);
+    async function getUserLocation() {
+      return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => resolve(position),
+            (error) => reject(error)
+          );
+        } else {
+          reject(new Error("Geolocalização não suportada pelo navegador."));
+        }
       });
-  </script>
+    }
 
+    async function fetchLocalWeatherAndLocation() {
+      try {
+        const position = await getUserLocation();
+        const { latitude, longitude } = position.coords;
+
+        // Buscar clima local usando Open-Meteo
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+        const weatherResponse = await fetch(weatherUrl);
+        if (!weatherResponse.ok) throw new Error("Erro ao buscar dados do clima.");
+        const weatherData = await weatherResponse.json();
+        const temp = Math.round(weatherData.current_weather.temperature);
+        const conditionCode = weatherData.current_weather.weathercode;
+
+        // Traduzir códigos de condição meteorológica
+        const weatherConditions = {
+          0: "Céu limpo",
+          1: "Principalmente claro",
+          2: "Parcialmente nublado",
+          3: "Nublado",
+          45: "Nevoeiro",
+          48: "Nevoeiro com depósito",
+          51: "Garoa leve",
+          53: "Garoa moderada",
+          55: "Garoa intensa",
+          61: "Chuva leve",
+          63: "Chuva moderada",
+          65: "Chuva forte",
+          71: "Chuva leve com neve",
+          73: "Chuva moderada com neve",
+          75: "Chuva forte com neve",
+          80: "Chuva forte com granizo",
+          81: "Granizo",
+          82: "Granizo forte"
+        };
+        const weatherCondition = weatherConditions[conditionCode] || "Condição desconhecida";
+
+        return { temp, weatherCondition };
+      } catch (error) {
+        console.error("Erro ao buscar a localização ou clima:", error);
+        return { temp: "--", weatherCondition: "Desconhecido" };
+      }
+    }
+
+    function updateClocks() {
+      const now = new Date();
+      const currentLocation = fetchLocalWeatherAndLocation();
+
+      exchanges.forEach((exchange) => {
+        const exchangeTime = new Date(now.toLocaleString("en-US", { timeZone: exchange.timezone }));
+        const openTime = new Date(now.setHours(exchange.open, 0, 0, 0));
+        const closeTime = new Date(now.setHours(exchange.close, 0, 0, 0));
+
+        const isOpen = now >= openTime && now <= closeTime && exchange.days.includes(now.getDay());
+        const statusClass = isOpen ? "aberta" : "fechada";
+        const statusText = isOpen ? "Aberta" : "Fechada";
+        
+        const clockElement = document.createElement('div');
+        clockElement.classList.add('clock-card');
+        
+        clockElement.innerHTML = `
+          <div class="clock-canvas">
+            <h3 class="clock-title">${exchange.name}</h3>
+            <div class="clock-time">${exchangeTime.toLocaleTimeString()}</div>
+            <div class="clock-status ${statusClass}">${statusText}</div>
+            <div class="clock-countdown">${isOpen ? "Próxima sessão às " + closeTime.toLocaleTimeString() : "Próxima sessão às " + openTime.toLocaleTimeString()}</div>
+          </div>
+        `;
+        document.getElementById('clocks-container').append(clockElement);
+      });
+    }
+
+    // Atualizar horários de bolsas e clima a cada 60 segundos
+    setInterval(() => {
+      updateClocks();
+    }, 60000);
+  </script>
 </body>
 </html>
