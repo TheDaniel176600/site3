@@ -29,14 +29,14 @@
   <div id="localizacao" class="localizacao">Carregando localização...</div>
 
   <script>
-    // Função para obter a localização do visitante
-    fetch('http://ip-api.com/json/')
+    // Usando a API GeoPlugin para obter a localização
+    fetch('https://www.geoplugin.net/json.gp')
       .then(response => response.json())
       .then(data => {
-        const cidade = data.city || "Cidade não detectada";
-        const bairro = data.regionName || "Bairro não detectado"; // Ou use um serviço que forneça o bairro
+        const cidade = data.geoplugin_city || "Cidade não detectada";
+        const bairro = data.geoplugin_regionName || "Bairro não detectado"; // Substitua com outro campo, se necessário
 
-        // Exibe a cidade e o bairro no site
+        // Exibe a cidade e a região no site
         document.getElementById('localizacao').innerHTML = `Você está em: ${cidade}, ${bairro}`;
       })
       .catch(error => {
